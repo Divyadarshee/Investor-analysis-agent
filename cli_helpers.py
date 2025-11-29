@@ -22,18 +22,33 @@ console = Console()
 AGENT_STATUS = {
     "EntryRouter": ("🧭 Understanding your request", "cyan"),
     "MarketAnalyst": ("📊 Analyzing stock market data", "blue"),
-    "NewsAnalyst": ("📰 Searching financial news", "yellow"),
+    "NewsIntelligence": ("📰 Gathering news intelligence", "yellow"),
+    "PDFNewsScout": ("📄 Searching in-house PDF database", "magenta"),
+    "WebNewsResearcher": ("🌐 Searching real-time web news", "yellow"),
     "CIO_Synthesizer": ("📝 Preparing investment report", "green"),
 }
 
 # Tool-specific messages (text, color)
 TOOL_STATUS = {
+    # Core Analysis Tools
     "get_top_gainers": ("📈 Finding top gaining stocks", "blue"),
     "get_top_losers": ("📉 Finding top losing stocks", "blue"),
     "get_sector_top_performers": ("🏢 Analyzing sector performance", "blue"),
     "analyze_stock": ("📊 Analyzing stock fundamentals", "blue"),
     "compare_stocks": ("⚖️ Comparing stock performance", "blue"),
     "calculate_returns": ("💹 Calculating returns", "blue"),
+    
+    # Index & Market Cap Tools (NEW)
+    "get_index_constituents": ("📋 Fetching index constituents", "cyan"),
+    "list_available_indices": ("📑 Listing available indices", "cyan"),
+    "get_sectoral_indices": ("🏭 Getting sectoral indices", "cyan"),
+    "get_sector_from_index": ("🔍 Identifying sector from index", "cyan"),
+    "get_stocks_by_sector_index": ("📊 Analyzing index performance", "blue"),
+    "get_stocks_by_market_cap": ("💰 Filtering by market cap", "blue"),
+    "get_market_cap_category": ("🏷️ Classifying market cap", "cyan"),
+    "get_sector_stocks": ("🏢 Getting sector stocks", "cyan"),
+    
+    # Advanced Pattern Detection Tools
     "detect_volume_surge": ("📊 Detecting volume anomalies", "magenta"),
     "detect_breakout": ("🚀 Identifying breakout patterns", "green"),
     "detect_breakouts": ("🚀 Identifying price breakouts", "green"),
@@ -45,9 +60,18 @@ TOOL_STATUS = {
     "find_momentum_stocks": ("🎯 Finding momentum stocks", "magenta"),
     "detect_reversal_candidates": ("🔄 Detecting reversal patterns", "yellow"),
     "get_volume_price_divergence": ("📊 Analyzing volume divergence", "blue"),
+    
+    # Utility Tools
     "list_available_tools": ("🛠️ Listing available tools", "cyan"),
-    "google_search": ("🔍 Searching news and catalysts", "yellow"),
     "check_data_availability": ("📅 Checking data availability", "cyan"),
+    
+    # Semantic Search Tools
+    "get_company_name": ("🏢 Looking up company name", "cyan"),
+    "load_collections_for_date_range": ("📚 Loading news collections for date range", "magenta"),
+    "semantic_search": ("🔎 Searching PDF news database", "magenta"),
+    
+    # News Tools
+    "google_search": ("🔍 Searching web for news & catalysts", "yellow"),
 }
 
 
@@ -109,8 +133,10 @@ class TokenTracker:
     AGENT_MODEL_MAP = {
         "EntryRouter": "gemini-2.5-flash-lite",
         "MarketAnalyst": "gemini-2.5-flash",
-        "NewsAnalyst": "gemini-2.5-flash-lite",
-        "CIO_Synthesizer": "gemini-2.5-pro"
+        "NewsIntelligence": "gemini-2.5-flash-lite",  # Parent parallel agent (doesn't use model directly)
+        "PDFNewsScout": "gemini-2.5-flash-lite",
+        "WebNewsResearcher": "gemini-2.5-flash-lite",
+        "CIO_Synthesizer": "gemini-2.5-flash"
     }
     
     def __init__(self):
@@ -124,6 +150,10 @@ class TokenTracker:
                 'response': 0,
                 'total': 0
             }
+        
+        # Handle None values (can happen with certain event types)
+        prompt_tokens = prompt_tokens or 0
+        response_tokens = response_tokens or 0
         
         self.model_usage[model_name]['prompt'] += prompt_tokens
         self.model_usage[model_name]['response'] += response_tokens
